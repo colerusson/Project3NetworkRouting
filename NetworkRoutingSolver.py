@@ -18,24 +18,13 @@ class NetworkRoutingSolver:
 
     def getShortestPath(self, destIndex):
         self.dest = destIndex
-
-        # path_edges = []
-        # total_length = 0
-        # node = self.network.nodes[self.source]
-        # edges_left = 3
-        # while edges_left > 0:
-        #    edge = node.neighbors[2]
-        #    path_edges.append((edge.src.loc, edge.dest.loc, '{:.0f}'.format(edge.length)))
-        #    total_length += edge.length
-        #    node = edge.dest
-        #    edges_left -= 1
-        # return {'cost': total_length, 'path': path_edges}
-
         # generate the path from the destination node to the source node using the previous nodes dictionary
         path = []
         node = self.network.nodes[destIndex]
         while node.node_id != self.source.node_id:
             path.append(node.node_id)
+            if node.node_id not in self.previous:
+                return {'cost': float('inf'), 'path': []}
             node = self.previous[node.node_id]
         path.append(self.source.node_id)
         path.reverse()

@@ -10,6 +10,7 @@ class NetworkRoutingSolver:
         self.network = None
         self.source = None
         self.distances = {}
+        self.previous = {}
 
     def initializeNetwork(self, network):
         assert (type(network) == CS312Graph)
@@ -18,31 +19,39 @@ class NetworkRoutingSolver:
     def getShortestPath(self, destIndex):
         self.dest = destIndex
 
-        # path = []
-        #         current = destIndex
-        #         while current != self.source:
-        #             for edge in self.network.nodes[current].neighbors:
-        #                 if self.distances[current] - edge.length == self.distances[edge.dest.node_id]:
-        #                     path.append(edge)
-        #                     current = edge.dest.node_id
-        #                     break
-        #         path.reverse()
-        #         return {'cost': self.distances[destIndex], 'path': path}
+        # path_edges = []
+        # total_length = 0
+        # node = self.network.nodes[self.source]
+        # edges_left = 3
+        # while edges_left > 0:
+        #    edge = node.neighbors[2]
+        #    path_edges.append((edge.src.loc, edge.dest.loc, '{:.0f}'.format(edge.length)))
+        #    total_length += edge.length
+        #    node = edge.dest
+        #    edges_left -= 1
+        # return {'cost': total_length, 'path': path_edges}
 
+        # generate the path from the destination node to the source node using the previous nodes dictionary
+        path = []
+        node = self.network.nodes[destIndex]
+        while node.node_id != self.source.node_id:
+            path.append(node.node_id)
+            node = self.previous[node.node_id]
+        path.append(self.source.node_id)
+        path.reverse()
+        # generate the path edges
         path_edges = []
         total_length = 0
-        node = self.network.nodes[self.source]
-        edges_left = 3
-        while edges_left > 0:
-            edge = node.neighbors[2]
-            path_edges.append((edge.src.loc, edge.dest.loc, '{:.0f}'.format(edge.length)))
-            total_length += edge.length
-            node = edge.dest
-            edges_left -= 1
+        for i in range(len(path) - 1):
+            for edge in self.network.nodes[path[i]].neighbors:
+                if edge.dest.node_id == path[i + 1]:
+                    path_edges.append((edge.src.loc, edge.dest.loc, '{:.0f}'.format(edge.length)))
+                    total_length += edge.length
         return {'cost': total_length, 'path': path_edges}
 
+
     def computeShortestPaths(self, srcIndex, use_heap=False):
-        self.source = srcIndex
+        self.source = self.network.nodes[srcIndex]
         t1 = time.time()
         if use_heap:
             self.dijkstra_heap(srcIndex)
@@ -98,3 +107,10 @@ class NetworkRoutingSolver:
                     if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
                         self.distances[edge.dest.node_id] = self.distances[current] + edge.length
                         heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))
+
+        # set each node equal to its previous node
+        for i in range(len(self.network.nodes)):
+            for edge in self.network.nodes[i].neighbors:
+                if self.distances[i] + edge.length == self.distances[edge.dest.node_id]:
+                    # add node to previous dictionary
+                    self.previous[edge.dest.node_id] = self.network.nodes[i]

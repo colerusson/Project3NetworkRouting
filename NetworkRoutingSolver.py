@@ -38,7 +38,6 @@ class NetworkRoutingSolver:
                     total_length += edge.length
         return {'cost': total_length, 'path': path_edges}
 
-
     def computeShortestPaths(self, srcIndex, use_heap=False):
         self.source = self.network.nodes[srcIndex]
         t1 = time.time()
@@ -47,6 +46,12 @@ class NetworkRoutingSolver:
         else:
             self.dijkstra_array(srcIndex)
         t2 = time.time()
+        # set each node equal to its previous node
+        for i in range(len(self.network.nodes)):
+            for edge in self.network.nodes[i].neighbors:
+                if self.distances[i] + edge.length == self.distances[edge.dest.node_id]:
+                    # add node to previous dictionary
+                    self.previous[edge.dest.node_id] = self.network.nodes[i]
         return t2 - t1
 
     # implement dijkstra's algorithm using an array
@@ -96,10 +101,3 @@ class NetworkRoutingSolver:
                     if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
                         self.distances[edge.dest.node_id] = self.distances[current] + edge.length
                         heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))
-
-        # set each node equal to its previous node
-        for i in range(len(self.network.nodes)):
-            for edge in self.network.nodes[i].neighbors:
-                if self.distances[i] + edge.length == self.distances[edge.dest.node_id]:
-                    # add node to previous dictionary
-                    self.previous[edge.dest.node_id] = self.network.nodes[i]

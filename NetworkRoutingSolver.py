@@ -7,9 +7,9 @@ import time
 
 class NetworkRoutingSolver:
     def __init__(self):
+        self.network = None
         self.source = None
-        self.distancesHeap = {}
-        self.distancesArray = {}
+        self.distances = {}
 
     def initializeNetwork(self, network):
         assert (type(network) == CS312Graph)
@@ -17,10 +17,18 @@ class NetworkRoutingSolver:
 
     def getShortestPath(self, destIndex):
         self.dest = destIndex
-        # TODO: RETURN THE SHORTEST PATH FOR destIndex
-        #       INSTEAD OF THE DUMMY SET OF EDGES BELOW
-        #       IT'S JUST AN EXAMPLE OF THE FORMAT YOU'LL 
-        #       NEED TO USE
+
+        # path = []
+        #         current = destIndex
+        #         while current != self.source:
+        #             for edge in self.network.nodes[current].neighbors:
+        #                 if self.distances[current] - edge.length == self.distances[edge.dest.node_id]:
+        #                     path.append(edge)
+        #                     current = edge.dest.node_id
+        #                     break
+        #         path.reverse()
+        #         return {'cost': self.distances[destIndex], 'path': path}
+
         path_edges = []
         total_length = 0
         node = self.network.nodes[self.source]
@@ -36,9 +44,6 @@ class NetworkRoutingSolver:
     def computeShortestPaths(self, srcIndex, use_heap=False):
         self.source = srcIndex
         t1 = time.time()
-        # TODO: RUN DIJKSTRA'S TO DETERMINE SHORTEST PATHS.
-        #       ALSO, STORE THE RESULTS FOR THE SUBSEQUENT
-        #       CALL TO getShortestPath(dest_index)
         if use_heap:
             self.dijkstra_heap(srcIndex)
         else:
@@ -46,42 +51,50 @@ class NetworkRoutingSolver:
         t2 = time.time()
         return t2 - t1
 
-    def dijkstra_heap(self, srcIndex):
-        distances = {}  # dictionary to keep track of the shortest distance to each node
-        for node in self.network.nodes:
-            distances[node] = float('inf')  # set all distances to infinity initially
-        distances[srcIndex] = 0  # set the distance to the starting node to 0
-
-        heap = [(0, srcIndex)]  # create a binary heap with the starting node and its distance
-
-        while heap:
-            (dist, current_node) = heapq.heappop(heap)  # get the node with the smallest distance
-            if dist > distances[current_node]:
-                continue  # if the distance is larger than the recorded distance, ignore it
-            for neighbor, weight in self.network[current_node].items():
-                distance = dist + weight
-                if distance < distances[neighbor]:
-                    distances[neighbor] = distance  # update the distance to the neighbor
-                    heapq.heappush(heap, (distance, neighbor))  # add the neighbor to the binary heap
-
-        self.distancesHeap = distances
-
+    # implement dijkstra's algorithm using an array
     def dijkstra_array(self, srcIndex):
-        distances = {}  # dictionary to keep track of the shortest distance to each node
-        for node in self.network.nodes:
-            distances[node] = float('inf')  # set all distances to infinity initially
-        distances[srcIndex] = 0  # set the distance to the starting node to 0
+        # initialize distances
+        for i in range(len(self.network.nodes)):
+            self.distances[i] = float('inf')
+        self.distances[srcIndex] = 0
+        # initialize visited
+        visited = [False] * len(self.network.nodes)
+        # initialize current node
+        current = srcIndex
+        # loop until all nodes have been visited
+        while False in visited:
+            # update distances
+            for edge in self.network.nodes[current].neighbors:
+                if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
+                    self.distances[edge.dest.node_id] = self.distances[current] + edge.length
+            # mark current node as visited
+            visited[current] = True
+            # find next node
+            min_distance = float('inf')
+            for i in range(len(self.distances)):
+                if self.distances[i] < min_distance and not visited[i]:
+                    min_distance = self.distances[i]
+                    current = i
 
-        unvisited = [(node, distance) for node, distance in distances.items()]  # list of unvisited nodes
-
-        while unvisited:
-            current_node, current_distance = min(unvisited, key=lambda x: x[
-                1])  # get the unvisited node with the smallest distance
-            unvisited.remove((current_node, current_distance))
-            for neighbor, weight in self.network[current_node].items():
-                distance = distances[current_node] + weight
-                if distance < distances[neighbor]:
-                    distances[neighbor] = distance  # update the distance to the neighbor
-                    unvisited.append((neighbor, distance))  # add the neighbor to the list of unvisited nodes
-
-        self.distancesArray = distances
+    # implement dijkstra's algorithm using a heap
+    def dijkstra_heap(self, srcIndex):
+        # initialize distances
+        for i in range(len(self.network.nodes)):
+            self.distances[i] = float('inf')
+        self.distances[srcIndex] = 0
+        # initialize visited
+        visited = [False] * len(self.network.nodes)
+        # initialize heap
+        heap = [(0, srcIndex)]
+        # loop until all nodes have been visited
+        while False in visited:
+            if len(heap) == 0:
+                break
+            # update distances
+            current_distance, current = heapq.heappop(heap)
+            if not visited[current]:
+                visited[current] = True
+                for edge in self.network.nodes[current].neighbors:
+                    if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
+                        self.distances[edge.dest.node_id] = self.distances[current] + edge.length
+                        heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))

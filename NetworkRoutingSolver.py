@@ -40,6 +40,8 @@ class NetworkRoutingSolver:
 
     def computeShortestPaths(self, srcIndex, use_heap=False):
         self.source = self.network.nodes[srcIndex]
+        self.previous = {}
+        self.distances = {}
         t1 = time.time()
         if use_heap:
             self.dijkstra_heap(srcIndex)
@@ -78,6 +80,8 @@ class NetworkRoutingSolver:
                 if self.distances[i] < min_distance and not visited[i]:
                     min_distance = self.distances[i]
                     current = i
+            if min_distance == float('inf'):
+                break
 
     # implement dijkstra's algorithm using a heap
     def dijkstra_heap(self, srcIndex):

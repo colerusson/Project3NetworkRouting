@@ -17,7 +17,6 @@ class NetworkRoutingSolver:
         self.network = network
 
     def getShortestPath(self, destIndex):
-        # generate the path from the destination node to the source node using the previous nodes dictionary
         path = []
         node = self.network.nodes[destIndex]
         while node.node_id != self.source.node_id:
@@ -27,7 +26,6 @@ class NetworkRoutingSolver:
             node = self.previous[node.node_id]
         path.append(self.source.node_id)
         path.reverse()
-        # generate the path edges
         path_edges = []
         total_length = 0
         for i in range(len(path) - 1):
@@ -55,7 +53,7 @@ class NetworkRoutingSolver:
                     self.previous[edge.dest.node_id] = self.network.nodes[i]
         return t2 - t1
 
-    # implement dijkstra's algorithm using an array
+    # dijkstra's algorithm using an array
     def dijkstra_array(self, srcIndex):
         # initialize distances
         for i in range(len(self.network.nodes)):
@@ -82,7 +80,7 @@ class NetworkRoutingSolver:
             if min_distance == float('inf'):
                 break
 
-    # implement dijkstra's algorithm using a heap
+    # dijkstra's algorithm using a heapq
     # def dijkstra_heap(self, srcIndex):
         # initialize distances
         # for i in range(len(self.network.nodes)):
@@ -105,7 +103,7 @@ class NetworkRoutingSolver:
             #           self.distances[edge.dest.node_id] = self.distances[current] + edge.length
             #            heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))
 
-    # implement dijkstra's algorithm using a heap
+    # dijkstra's algorithm using a heap from scratch
     def dijkstra_heap(self, srcIndex):
         # initialize distances
         for i in range(len(self.network.nodes)):
@@ -119,7 +117,7 @@ class NetworkRoutingSolver:
         while False in visited:
             if len(myHeap) == 0:
                 break
-            # update distances
+            # update distances and call my heap functions
             current_distance, current = self.myHeapPop(myHeap)
             if not visited[current]:
                 visited[current] = True
@@ -128,7 +126,6 @@ class NetworkRoutingSolver:
                         self.distances[edge.dest.node_id] = self.distances[current] + edge.length
                         self.myHeapPush(myHeap, (self.distances[edge.dest.node_id], edge.dest.node_id))
 
-    # implement the heap function to pop a heap from scratch
     def myHeapPop(self, heap):
         if len(heap) == 0:
             return None
@@ -139,12 +136,10 @@ class NetworkRoutingSolver:
         self.myHeapify(heap, 0)
         return heap_min
 
-    # implement the heap function to push a heap from scratch
     def myHeapPush(self, heap, item):
         heap.append(item)
         self.myHeapify(heap, len(heap) - 1)
 
-    # implement the heap function to heapify a heap from scratch
     def myHeapify(self, heap, index):
         if index == 0:
             return

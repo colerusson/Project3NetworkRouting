@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import heapq
+import math
 
 from CS312Graph import *
 import time
@@ -17,7 +17,6 @@ class NetworkRoutingSolver:
         self.network = network
 
     def getShortestPath(self, destIndex):
-        self.dest = destIndex
         # generate the path from the destination node to the source node using the previous nodes dictionary
         path = []
         node = self.network.nodes[destIndex]
@@ -84,6 +83,29 @@ class NetworkRoutingSolver:
                 break
 
     # implement dijkstra's algorithm using a heap
+    # def dijkstra_heap(self, srcIndex):
+        # initialize distances
+        # for i in range(len(self.network.nodes)):
+        #    self.distances[i] = float('inf')
+        # self.distances[srcIndex] = 0
+        # initialize visited
+        # visited = [False] * len(self.network.nodes)
+        # initialize heap
+        # heap = [(0, srcIndex)]
+        # loop until all nodes have been visited
+        # while False in visited:
+            # if len(heap) == 0:
+            #    break
+            # update distances
+            # current_distance, current = heapq.heappop(heap)
+            # if not visited[current]:
+            #    visited[current] = True
+            #    for edge in self.network.nodes[current].neighbors:
+            #        if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
+            #           self.distances[edge.dest.node_id] = self.distances[current] + edge.length
+            #            heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))
+
+    # implement dijkstra's algorithm using a heap
     def dijkstra_heap(self, srcIndex):
         # initialize distances
         for i in range(len(self.network.nodes)):
@@ -92,16 +114,41 @@ class NetworkRoutingSolver:
         # initialize visited
         visited = [False] * len(self.network.nodes)
         # initialize heap
-        heap = [(0, srcIndex)]
+        myHeap = [(0, srcIndex)]
         # loop until all nodes have been visited
         while False in visited:
-            if len(heap) == 0:
+            if len(myHeap) == 0:
                 break
             # update distances
-            current_distance, current = heapq.heappop(heap)
+            current_distance, current = self.myHeapPop(myHeap)
             if not visited[current]:
                 visited[current] = True
                 for edge in self.network.nodes[current].neighbors:
                     if self.distances[current] + edge.length < self.distances[edge.dest.node_id]:
                         self.distances[edge.dest.node_id] = self.distances[current] + edge.length
-                        heapq.heappush(heap, (self.distances[edge.dest.node_id], edge.dest.node_id))
+                        self.myHeapPush(myHeap, (self.distances[edge.dest.node_id], edge.dest.node_id))
+
+    # implement the heap function to pop a heap from scratch
+    def myHeapPop(self, heap):
+        if len(heap) == 0:
+            return None
+        if len(heap) == 1:
+            return heap.pop()
+        heap_min = heap[0]
+        heap[0] = heap.pop()
+        self.myHeapify(heap, 0)
+        return heap_min
+
+    # implement the heap function to push a heap from scratch
+    def myHeapPush(self, heap, item):
+        heap.append(item)
+        self.myHeapify(heap, len(heap) - 1)
+
+    # implement the heap function to heapify a heap from scratch
+    def myHeapify(self, heap, index):
+        if index == 0:
+            return
+        parent_index = math.floor((index - 1) / 2)
+        if heap[index][0] < heap[parent_index][0]:
+            heap[index], heap[parent_index] = heap[parent_index], heap[index]
+            self.myHeapify(heap, parent_index)
